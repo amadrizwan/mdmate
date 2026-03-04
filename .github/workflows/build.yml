@@ -30,7 +30,7 @@ jobs:
 
       - run: npm ci
       - run: npm run build:asciiflow
-      - run: npm run ${{ matrix.script }}
+      - run: npm run ${{ matrix.script }} -- --publish never
 
       - name: Upload release assets
         uses: softprops/action-gh-release@v2
