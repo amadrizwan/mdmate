@@ -1,0 +1,541 @@
+/* ==========================================================================
+   Top bar — floating, content-fit, terminal aesthetic with box-drawing
+   ========================================================================== */
+
+.topBarWrapper {
+  position: fixed;
+  top: var(--space-xl);
+  left: 0;
+  right: 0;
+  z-index: 20;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  pointer-events: none;
+  padding: 0 var(--space-xl);
+  box-sizing: border-box;
+}
+
+.topBar {
+  font-family: var(--font-mono);
+  font-size: var(--font-size);
+  background: var(--color-bg);
+  border: var(--border);
+  user-select: none;
+  white-space: nowrap;
+  pointer-events: auto;
+  max-width: 100%;
+}
+
+/* --- Primary row --- */
+
+.topRow {
+  display: flex;
+  align-items: center;
+  min-height: 36px;
+  padding: 0 var(--space-md);
+  gap: 0;
+  flex-wrap: wrap;
+}
+
+/* --- Secondary row (contextual: file list, help, export, freeform chars) --- */
+
+.secondRow {
+  font-family: var(--font-mono);
+  font-size: var(--font-size);
+  background: var(--color-bg);
+  border: var(--border);
+  border-top: none;
+  margin-top: -1px;
+  padding: var(--space-md);
+  white-space: normal;
+  box-sizing: border-box;
+  pointer-events: auto;
+}
+
+/* --- Branding --- */
+
+.brand {
+  font-family: var(--font-mono);
+  font-size: var(--font-size);
+  padding: var(--space-sm) var(--space-md);
+  text-decoration: none;
+  line-height: 1;
+  font-weight: bold;
+}
+
+.brand:hover {
+  opacity: 0.7;
+}
+
+/* --- Plain text menu triggers --- */
+
+.menuBarBtn {
+  font-family: var(--font-mono);
+  font-size: var(--font-size);
+  padding: var(--space-sm) var(--space-md);
+  background: none;
+  border: none;
+  color: var(--color-text-muted);
+  cursor: pointer;
+  text-decoration: none;
+  line-height: 1;
+  outline: none;
+}
+
+.menuBarBtn:hover {
+  color: var(--color-text);
+}
+
+.menuBarBtnActive {
+  color: var(--color-text);
+  font-weight: bold;
+}
+
+/* --- Separator: box-drawing vertical │ --- */
+
+.sep {
+  color: var(--color-border);
+  padding: 0 var(--space-sm);
+  line-height: 1;
+  font-size: var(--font-size);
+}
+
+/* --- Tool tabs --- */
+
+.toolTab {
+  font-family: var(--font-mono);
+  font-size: var(--font-size);
+  padding: var(--space-sm) var(--space-sm);
+  background: none;
+  border: none;
+  color: var(--color-text-muted);
+  cursor: pointer;
+  line-height: 1;
+  outline: none;
+}
+
+.toolTab:hover {
+  color: var(--color-text);
+}
+
+.toolTabActive {
+  font-weight: bold;
+}
+
+/* --- Bracket-wrapped action buttons --- */
+
+.actionBtn {
+  font-family: var(--font-mono);
+  font-size: var(--font-size);
+  padding: 0 var(--space-xs);
+  background: none;
+  border: none;
+  cursor: pointer;
+  line-height: 1;
+  outline: none;
+}
+
+.actionBtn:hover {
+  opacity: 0.7;
+}
+
+/* --- Shared drawing banner --- */
+
+.sharedBanner {
+  display: flex;
+  align-items: center;
+  gap: var(--space-md);
+  color: var(--color-text-muted);
+}
+
+/* --- File list (in second row) --- */
+
+.fileList {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  width: 100%;
+}
+
+.fileRow {
+  display: flex;
+  align-items: center;
+  gap: var(--space-md);
+  padding: var(--space-xs) 0;
+  font-family: var(--font-mono);
+  font-size: var(--font-size);
+  color: var(--color-text);
+  white-space: nowrap;
+}
+
+.fileRowActive {
+  font-weight: bold;
+}
+
+.fileRowName {
+  cursor: pointer;
+  background: none;
+  border: none;
+  font-family: var(--font-mono);
+  font-size: var(--font-size);
+  color: inherit;
+  padding: 0;
+  text-align: left;
+  outline: none;
+  white-space: pre;
+}
+
+.fileRowName:hover {
+  color: var(--color-accent);
+}
+
+.fileRowActions {
+  display: flex;
+  align-items: center;
+  gap: var(--space-md);
+  margin-left: auto;
+}
+
+.fileRowAction {
+  font-family: var(--font-mono);
+  font-size: var(--font-size);
+  background: none;
+  border: none;
+  color: var(--color-text-muted);
+  cursor: pointer;
+  padding: 0 var(--space-xs);
+  outline: none;
+}
+
+.fileRowAction:hover {
+  color: var(--color-text);
+}
+
+/* --- Inline rename input --- */
+
+.fileRowRenameInput {
+  font-family: var(--font-mono);
+  font-size: var(--font-size);
+  background: var(--color-bg-hover);
+  color: var(--color-text);
+  border: none;
+  padding: 0;
+  outline: none;
+}
+
+.fileRowRenameInput::selection {
+  background: var(--color-accent);
+  color: var(--color-bg);
+}
+
+/* --- Inline confirm (delete confirmation) --- */
+
+.fileRowConfirm {
+  display: flex;
+  align-items: center;
+  gap: var(--space-md);
+  margin-left: auto;
+  color: var(--color-danger);
+  font-size: var(--font-size);
+}
+
+/* --- Draw panel (in second row) --- */
+
+.drawPanel {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+  width: 100%;
+  min-width: 0;
+  max-width: 100%;
+}
+
+.drawHint {
+  color: var(--color-text-muted);
+}
+
+.drawExpandBtn {
+  font-family: var(--font-mono);
+  font-size: var(--font-size);
+  background: none;
+  border: none;
+  color: var(--color-accent);
+  cursor: pointer;
+  padding: 0;
+  text-align: left;
+  outline: none;
+}
+
+.drawExpandBtn:hover {
+  color: var(--color-text);
+}
+
+/* --- Character picker (in second row) --- */
+
+.charPicker {
+  display: flex;
+  flex-wrap: wrap;
+  width: 100%;
+  min-width: 0;
+  overflow: hidden;
+}
+
+.charBtn {
+  font-family: var(--font-mono);
+  font-size: var(--font-size);
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: none;
+  border: 1px solid transparent;
+  color: var(--color-text);
+  cursor: pointer;
+  flex-shrink: 0;
+  outline: none;
+}
+
+.charBtn:hover {
+  background: var(--color-bg-hover);
+  border-color: var(--color-border-light);
+}
+
+.charBtnActive {
+  border-color: var(--color-accent);
+  color: var(--color-accent);
+  font-weight: bold;
+}
+
+/* --- Help content (inline in second row, table layout) --- */
+
+.helpContent {
+  line-height: 1.6;
+  color: var(--color-text);
+}
+
+.helpGrid {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 0 var(--space-md);
+}
+
+.helpGrid > span {
+  overflow-wrap: break-word;
+  min-width: 0;
+}
+
+.helpGrid > span:nth-child(odd) {
+  white-space: nowrap;
+}
+
+.helpSection {
+  color: var(--color-text-muted);
+  font-weight: bold;
+}
+
+.helpDivider {
+  border-top: 1px solid var(--color-border);
+  margin: var(--space-xs) 0;
+}
+
+.helpExplainer {
+  color: var(--color-text-muted);
+}
+
+.helpLink {
+  color: var(--color-accent);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.helpLink:hover {
+  opacity: 0.7;
+}
+
+/* --- Custom dropdown (terminal-style select replacement) --- */
+
+.customSelect {
+  position: relative;
+  display: inline-block;
+}
+
+.customSelectTrigger {
+  font-family: var(--font-mono);
+  font-size: var(--font-size);
+  background: none;
+  border: none;
+  color: var(--color-text);
+  cursor: pointer;
+  padding: 0;
+  line-height: 1;
+  white-space: nowrap;
+  outline: none;
+}
+
+.customSelectTrigger:hover {
+  opacity: 0.7;
+}
+
+.customSelectChevron {
+  color: var(--color-text-muted);
+  margin-left: var(--space-xs);
+}
+
+.customSelectPanel {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  z-index: 50;
+  background: var(--color-bg);
+  border: var(--border);
+  padding: var(--space-xs) 0;
+  margin-top: var(--space-xs);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
+  white-space: nowrap;
+}
+
+.customSelectOption {
+  display: block;
+  width: 100%;
+  font-family: var(--font-mono);
+  font-size: var(--font-size);
+  background: none;
+  border: none;
+  color: var(--color-text);
+  cursor: pointer;
+  padding: var(--space-xs) var(--space-md);
+  text-align: left;
+  white-space: nowrap;
+  outline: none;
+}
+
+.customSelectOption:hover {
+  background: var(--color-bg-hover);
+}
+
+.customSelectOptionActive {
+  color: var(--color-accent);
+  font-weight: bold;
+}
+
+/* --- Export panel (inline in second row) --- */
+
+.exportPanel {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-md);
+  width: 100%;
+  min-width: 0;
+  max-width: 100%;
+}
+
+.exportRow {
+  display: flex;
+  align-items: center;
+  gap: var(--space-md);
+  width: 100%;
+  flex-wrap: wrap;
+}
+
+.exportOptions {
+  display: flex;
+  align-items: center;
+  gap: var(--space-md);
+}
+
+.exportSelect {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+}
+
+.exportSelectLabel {
+  color: var(--color-text-muted);
+}
+
+.exportActions {
+  display: flex;
+  align-items: center;
+  gap: var(--space-md);
+  margin-left: auto;
+}
+
+.exportPreview {
+  border-top: var(--border);
+  padding: var(--space-md) 0 0 0;
+  overflow: auto;
+  max-height: 40vh;
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
+/* Custom scrollbars for preview */
+.exportPreview::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+.exportPreview::-webkit-scrollbar-track {
+  background: var(--color-bg);
+}
+
+.exportPreview::-webkit-scrollbar-thumb {
+  background: var(--color-border);
+  border: 1px solid var(--color-bg);
+}
+
+.exportPreview::-webkit-scrollbar-thumb:hover {
+  background: var(--color-text-muted);
+}
+
+.exportPreview::-webkit-scrollbar-corner {
+  background: var(--color-bg);
+}
+
+.exportPreviewText {
+  font-family: var(--font-mono);
+  font-size: var(--font-size);
+  color: var(--color-text);
+  white-space: pre;
+  line-height: 1.4;
+  margin: 0;
+}
+
+/* --- View panel (in second row) --- */
+
+.viewPanel {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  width: 100%;
+  color: var(--color-text-muted);
+  flex-wrap: wrap;
+}
+
+.viewLabel {
+  color: var(--color-text-muted);
+}
+
+.viewValue {
+  color: var(--color-text);
+  font-weight: bold;
+}
+
+/* --- Mobile: responsive top bar --- */
+
+@media (max-width: 768px) {
+  .topBarWrapper {
+    top: var(--space-sm);
+    padding: 0 var(--space-sm);
+  }
+
+  .exportOptions {
+    flex-wrap: wrap;
+  }
+
+  .exportActions {
+    margin-left: 0;
+  }
+}

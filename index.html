@@ -1,0 +1,163 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>mdmate - Markdown + Mermaid</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,700&family=IBM+Plex+Mono:wght@400;500&family=Manrope:wght@400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/codemirror@5.65.18/lib/codemirror.min.css">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header class="toolbar">
+    <div class="left">
+      <h1>mdmate</h1>
+    </div>
+    <div class="right">
+      <button id="open-folder-btn" class="ghost">Open Folder</button>
+      <button id="save-file-btn" class="ghost">Save</button>
+      <button id="new-btn" class="ghost">New</button>
+      <button id="copy-btn">Copy in blocks</button>
+      <button id="refresh-btn" title="Re-render preview">Refresh</button>
+      <button id="scroll-lock-btn" class="ghost" aria-pressed="true" title="Toggle synchronized scrolling">
+        Scroll Lock
+      </button>
+    </div>
+  </header>
+  <div class="statusbar">
+    <div class="status-left">
+      <span id="file-sync-state" class="sync-pill disconnected">Disconnected</span>
+      <span id="workspace-root">No workspace linked</span>
+      <span id="active-file-state">No file open</span>
+    </div>
+    <div class="section-tools">
+      <label for="section-select">Section</label>
+      <select id="section-select"></select>
+      <button type="button" id="section-up" class="ghost compact">Up</button>
+      <button type="button" id="section-down" class="ghost compact">Down</button>
+    </div>
+  </div>
+
+  <main class="workspace-layout">
+    <aside class="workspace-pane">
+      <div class="pane-header">Workspace</div>
+      <div id="workspace-meta" class="workspace-meta">
+        Open a folder to live-sync markdown files with local edits.
+      </div>
+      <div id="workspace-files" class="workspace-files"></div>
+    </aside>
+    <div class="editor-shell">
+      <div class="split">
+        <section class="pane editor-pane">
+          <div class="pane-header">Markdown</div>
+          <div id="editor"></div>
+        </section>
+        <div id="pane-resizer" class="pane-resizer" role="separator" aria-orientation="vertical" aria-label="Resize panes"></div>
+        <section class="pane preview-pane">
+          <div class="pane-header">Rendered (editable)</div>
+          <div class="formatbar" id="formatbar">
+            <button type="button" data-action="h1" aria-label="Heading 1" title="Heading 1">
+              <span class="formatbar-glyph">H1</span>
+            </button>
+            <button type="button" data-action="h2" aria-label="Heading 2" title="Heading 2">
+              <span class="formatbar-glyph">H2</span>
+            </button>
+            <button type="button" data-action="h3" aria-label="Heading 3" title="Heading 3">
+              <span class="formatbar-glyph">H3</span>
+            </button>
+            <button type="button" data-action="bold" aria-label="Bold" title="Bold">
+              <svg viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M7 5h7a4 4 0 0 1 0 8H7z"></path>
+                <path d="M7 13h8a4 4 0 0 1 0 8H7z"></path>
+              </svg>
+            </button>
+            <button type="button" data-action="italic" aria-label="Italic" title="Italic">
+              <svg viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M10 5h8"></path>
+                <path d="M6 19h8"></path>
+                <path d="M14 5l-4 14"></path>
+              </svg>
+            </button>
+            <button type="button" data-action="link" aria-label="Insert Link" title="Insert Link">
+              <svg viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M10.5 13.5l3-3"></path>
+                <path d="M7.5 16.5l-1.8 1.8a4 4 0 0 1-5.7-5.7L4 8.6a4 4 0 0 1 5.7 0"></path>
+                <path d="M16.5 7.5l1.8-1.8a4 4 0 1 1 5.7 5.7L20 15.4a4 4 0 0 1-5.7 0"></path>
+              </svg>
+            </button>
+            <button type="button" data-action="ul" aria-label="Bulleted List" title="Bulleted List">
+              <svg viewBox="0 0 24 24" aria-hidden="true">
+                <circle cx="5" cy="6" r="1.5"></circle>
+                <circle cx="5" cy="12" r="1.5"></circle>
+                <circle cx="5" cy="18" r="1.5"></circle>
+                <path d="M10 6h9"></path>
+                <path d="M10 12h9"></path>
+                <path d="M10 18h9"></path>
+              </svg>
+            </button>
+            <button type="button" data-action="ol" aria-label="Numbered List" title="Numbered List">
+              <svg viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M4 6h2V4"></path>
+                <path d="M6 4v4"></path>
+                <path d="M4 12c0-1.1.9-2 2-2s2 .9 2 2c0 2-4 2-4 4h4"></path>
+                <path d="M4 17h3a1.5 1.5 0 0 1 0 3H4"></path>
+                <path d="M10 6h9"></path>
+                <path d="M10 12h9"></path>
+                <path d="M10 18h9"></path>
+              </svg>
+            </button>
+            <button type="button" data-action="quote" aria-label="Quote" title="Quote">
+              <svg viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M8 9H5v4h3v4H4V9a4 4 0 0 1 4-4z"></path>
+                <path d="M18 9h-3v4h3v4h-4V9a4 4 0 0 1 4-4z"></path>
+              </svg>
+            </button>
+            <button type="button" data-action="code" aria-label="Code Block" title="Code Block">
+              <svg viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M8 8l-4 4 4 4"></path>
+                <path d="M16 8l4 4-4 4"></path>
+                <path d="M14 4l-4 16"></path>
+              </svg>
+            </button>
+            <button type="button" data-action="table" aria-label="Table" title="Table">
+              <svg viewBox="0 0 24 24" aria-hidden="true">
+                <rect x="3" y="5" width="18" height="14" rx="1"></rect>
+                <path d="M3 10h18"></path>
+                <path d="M3 14h18"></path>
+                <path d="M10 5v14"></path>
+                <path d="M16 5v14"></path>
+              </svg>
+            </button>
+            <button type="button" data-action="mermaid" aria-label="Mermaid Diagram" title="Mermaid Diagram">
+              <svg viewBox="0 0 24 24" aria-hidden="true">
+                <circle cx="5" cy="6" r="2"></circle>
+                <circle cx="19" cy="6" r="2"></circle>
+                <circle cx="12" cy="18" r="2"></circle>
+                <path d="M7 6h10"></path>
+                <path d="M6.7 7.3l4.1 8.1"></path>
+                <path d="M17.3 7.3l-4.1 8.1"></path>
+              </svg>
+            </button>
+          </div>
+          <div class="table-picker hidden" id="table-picker" aria-hidden="true">
+            <div class="table-size-label" id="table-size-label">0 x 0</div>
+            <div class="table-grid" id="table-grid"></div>
+          </div>
+          <div id="preview" class="preview" contenteditable="true"></div>
+        </section>
+      </div>
+    </div>
+  </main>
+
+  <script src="node_modules/morphdom/dist/morphdom-umd.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/codemirror@5.65.18/lib/codemirror.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/codemirror@5.65.18/mode/xml/xml.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/codemirror@5.65.18/mode/javascript/javascript.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/codemirror@5.65.18/mode/markdown/markdown.min.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>

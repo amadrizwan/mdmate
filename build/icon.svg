@@ -1,0 +1,35 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#0EA5A1"/>
+      <stop offset="100%" stop-color="#2563EB"/>
+    </linearGradient>
+    <clipPath id="roundedSquare">
+      <rect width="512" height="512" rx="112" ry="112"/>
+    </clipPath>
+  </defs>
+
+  <!-- Background -->
+  <rect width="512" height="512" rx="112" ry="112" fill="url(#bg)"/>
+
+  <!-- Single unified mark: # with flowing right stroke -->
+  <g fill="none" stroke="white" stroke-width="36" stroke-linecap="round" stroke-linejoin="round">
+    <!-- Left vertical bar -->
+    <line x1="178" y1="136" x2="198" y2="376"/>
+
+    <!-- Right vertical bar — top portion only, it will flow out -->
+    <line x1="282" y1="136" x2="296" y2="280"/>
+
+    <!-- Top horizontal bar -->
+    <line x1="128" y1="216" x2="330" y2="204"/>
+
+    <!-- Bottom horizontal bar -->
+    <line x1="140" y1="304" x2="342" y2="292"/>
+
+    <!-- The flow: right bar curves outward into a signal path -->
+    <path d="M296,280 C296,330 320,352 370,352 L390,352" stroke-width="32"/>
+  </g>
+
+  <!-- Terminal dot — the output -->
+  <circle cx="406" cy="352" r="18" fill="white"/>
+</svg>

@@ -1,0 +1,132 @@
+
+export const MAX_GRID_WIDTH = 2000;
+export const MAX_GRID_HEIGHT = 600;
+
+export interface ICharacterSet {
+  cornerTopLeft: string;
+  cornerTopRight: string;
+  cornerBottomRight: string;
+  cornerBottomLeft: string;
+  arrowLeft: string;
+  arrowRight: string;
+  arrowUp: string;
+  arrowDown: string;
+  lineVertical: string;
+  lineHorizontal: string;
+  junctionDown: string;
+  junctionUp: string;
+  junctionLeft: string;
+  junctionRight: string;
+  junctionAll: string;
+}
+
+export const UNICODE: ICharacterSet = {
+  cornerTopLeft: "┌",
+  cornerTopRight: "┐",
+  cornerBottomRight: "┘",
+  cornerBottomLeft: "└",
+  arrowLeft: "◄",
+  arrowRight: "►",
+  arrowUp: "▲",
+  arrowDown: "▼",
+  lineVertical: "│",
+  lineHorizontal: "─",
+  junctionDown: "┬",
+  junctionUp: "┴",
+  junctionLeft: "┤",
+  junctionRight: "├",
+  junctionAll: "┼",
+};
+
+export const ASCII: ICharacterSet = {
+  cornerTopLeft: "+",
+  cornerTopRight: "+",
+  cornerBottomRight: "+",
+  cornerBottomLeft: "+",
+  arrowLeft: "<",
+  arrowRight: ">",
+  arrowUp: "^",
+  arrowDown: "v",
+  lineVertical: "|",
+  lineHorizontal: "-",
+  junctionDown: "+",
+  junctionUp: "+",
+  junctionLeft: "+",
+  junctionRight: "+",
+  junctionAll: "+",
+};
+
+export const SPECIAL_VALUE = UNICODE.junctionAll;
+export const ALT_SPECIAL_VALUE = UNICODE.arrowRight;
+
+type ICharacter = keyof ICharacterSet;
+
+const SPECIAL_VALUE_KEYS: ICharacter[] = [
+  "cornerTopLeft",
+  "cornerTopRight",
+  "cornerBottomRight",
+  "cornerBottomLeft",
+  "lineVertical",
+  "lineHorizontal",
+  "junctionDown",
+  "junctionUp",
+  "junctionLeft",
+  "junctionRight",
+  "junctionAll",
+];
+const ALT_SPECIAL_VALUE_KEYS: ICharacter[] = [
+  "arrowLeft",
+  "arrowRight",
+  "arrowUp",
+  "arrowDown",
+];
+
+export const SPECIAL_VALUES = [
+  ...new Set([
+    ...SPECIAL_VALUE_KEYS.map((key) => UNICODE[key]),
+    // ...SPECIAL_VALUE_KEYS.map((key) => ASCII[key]),
+  ]),
+];
+
+export const ALT_SPECIAL_VALUES = [
+  ...new Set([
+    ...ALT_SPECIAL_VALUE_KEYS.map((key) => UNICODE[key]),
+    // ...ALT_SPECIAL_VALUE_KEYS.map((key) => ASCII[key]),
+  ]),
+];
+
+export class Characters {
+  public static isLine = (value: string) => {
+    return SPECIAL_VALUES.includes(value);
+  }
+
+  public static isArrow = (value: string) => {
+    return ALT_SPECIAL_VALUES.includes(value);
+  }
+}
+export const ALL_SPECIAL_VALUES = SPECIAL_VALUES.concat(ALT_SPECIAL_VALUES);
+
+export const isSpecial = (value: string) => ALL_SPECIAL_VALUES.includes(value);
+
+export const MAX_UNDO = 50;
+
+export const SPECIAL_LINE_H = "-";
+export const SPECIAL_LINE_V = "|";
+
+// Character cell dimensions — measured dynamically from the loaded font.
+// Re-exported from font.ts so existing `import * as constants` usage keeps working.
+export { CHAR_PIXELS_H, CHAR_PIXELS_V } from "#asciiflow/client/font";
+
+export const RENDER_PADDING_CELLS = 3;
+
+export const KEY_RETURN = "<enter>";
+export const KEY_BACKSPACE = "<backspace>";
+export const KEY_DELETE = "<delete>";
+export const KEY_UP = "<up>";
+export const KEY_DOWN = "<down>";
+export const KEY_LEFT = "<left>";
+export const KEY_RIGHT = "<right>";
+
+// http://stackoverflow.com/questions/4817029/whats-the-best-way-to-detect-a-touch-screen-device-using-javascript
+export const TOUCH_ENABLED = () => 
+  "ontouchstart" in window || "onmsgesturechange" in window;

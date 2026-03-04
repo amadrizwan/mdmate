@@ -1,0 +1,113 @@
+{
+  "name": "mdmate",
+  "version": "0.1.0",
+  "description": "Markdown + Mermaid workspace with Confluence copy helpers",
+  "main": "main.js",
+  "scripts": {
+    "build:asciiflow": "node scripts/build-asciiflow.mjs",
+    "start": "electron .",
+    "dev": "electron .",
+    "package": "electron-builder --dir",
+    "dist": "electron-builder",
+    "dist:mac": "electron-builder --mac",
+    "dist:win": "electron-builder --win",
+    "dist:linux": "electron-builder --linux"
+  },
+  "dependencies": {
+    "@mdx-js/mdx": "^3",
+    "chokidar": "^3.6.0",
+    "morphdom": "^2.7.8",
+    "react": "^18",
+    "react-dom": "^18",
+    "remark-gfm": "^4"
+  },
+  "devDependencies": {
+    "@semantic-release/changelog": "^6.0.3",
+    "@semantic-release/git": "^10.0.1",
+    "electron": "^30.0.0",
+    "electron-builder": "^24.13.3",
+    "esbuild": "^0.27.3",
+    "js-base64": "^3.7.7",
+    "pako": "^1.0.11",
+    "react": "^16.14.0",
+    "react-dom": "^16.14.0",
+    "react-router": "^5.3.4",
+    "react-router-dom": "^5.3.4",
+    "semantic-release": "^24.0.0",
+    "uuid": "^8.3.2",
+    "zustand": "^4.5.5"
+  },
+  "build": {
+    "appId": "com.mdmate.app",
+    "productName": "mdmate",
+    "directories": {
+      "output": "dist"
+    },
+    "files": [
+      "index.html",
+      "style.css",
+      "app.js",
+      "main.js",
+      "preload.js",
+      "mdx-worker.mjs",
+      "package.json",
+      "assets/fonts/SourceCodePro-Regular.ttf",
+      "assets/fonts/SourceCodePro-Medium.ttf",
+      "assets/asciiflow/**/*",
+      "node_modules/@mdx-js/**",
+      "node_modules/react/**",
+      "node_modules/react-dom/**",
+      "node_modules/remark-gfm/**",
+      "node_modules/unified/**",
+      "node_modules/remark-*/**",
+      "node_modules/rehype-*/**",
+      "node_modules/hast-*/**",
+      "node_modules/mdast-*/**",
+      "node_modules/micromark*/**",
+      "node_modules/unist-*/**",
+      "node_modules/vfile*/**",
+      "node_modules/estree-*/**",
+      "node_modules/acorn*/**",
+      "node_modules/periscopic/**",
+      "node_modules/is-reference/**"
+    ],
+    "mac": {
+      "target": [
+        {
+          "target": "dmg",
+          "arch": ["x64", "arm64"]
+        }
+      ]
+    },
+    "win": {
+      "target": [
+        {
+          "target": "nsis",
+          "arch": ["x64"]
+        }
+      ]
+    },
+    "linux": {
+      "target": [
+        {
+          "target": "AppImage",
+          "arch": ["x64"]
+        }
+      ]
+    }
+  },
+  "release": {
+    "branches": ["main"],
+    "plugins": [
+      "@semantic-release/commit-analyzer",
+      "@semantic-release/release-notes-generator",
+      "@semantic-release/changelog",
+      ["@semantic-release/npm", { "npmPublish": false }],
+      ["@semantic-release/git", {
+        "assets": ["package.json", "CHANGELOG.md"],
+        "message": "chore(release): ${nextRelease.version} [skip ci]"
+      }],
+      "@semantic-release/github"
+    ]
+  }
+}

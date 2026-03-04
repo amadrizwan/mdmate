@@ -1,0 +1,42 @@
+name: Build & Upload
+
+on:
+  release:
+    types: [published]
+
+jobs:
+  build:
+    strategy:
+      matrix:
+        include:
+          - os: macos-latest
+            script: dist:mac
+          - os: windows-latest
+            script: dist:win
+          - os: ubuntu-latest
+            script: dist:linux
+
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.release.tag_name }}
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - run: npm ci
+      - run: npm run build:asciiflow
+      - run: npm run ${{ matrix.script }}
+
+      - name: Upload release assets
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ github.event.release.tag_name }}
+          files: |
+            dist/*.dmg
+            dist/*.exe
+            dist/*.AppImage
