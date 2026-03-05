@@ -2933,6 +2933,9 @@ async function handleFormatbarClick(event) {
     case "mermaid":
       insertMermaidBlockAtCursor();
       break;
+    case "react":
+      insertReactBlockAtCursor();
+      break;
     default:
       return;
   }
@@ -2940,7 +2943,7 @@ async function handleFormatbarClick(event) {
   cachePreviewSelection();
   syncPreviewToEditor();
 
-  if (action === "mermaid") {
+  if (action === "mermaid" || action === "react") {
     renderFromEditor();
   }
 }
@@ -3389,6 +3392,20 @@ function insertMermaidBlockAtCursor() {
   insertBlockAtCursor(pre);
 }
 
+function insertReactBlockAtCursor() {
+  restorePreviewSelection();
+  const source = [
+    "function App() {",
+    "  return <div>Hello, world!</div>;",
+    "}",
+  ].join("\n");
+  const block = `\`\`\`jsx live\n${source}\n\`\`\``;
+  const inserted = insertMarkdownBlockAtPreviewCursor(block);
+  if (!inserted) {
+    insertMarkdownIntoEditor(`\n${block}\n`);
+  }
+}
+
 function insertTableAtCursor(rows, cols) {
   const tableBlock = buildMarkdownTableSnippet(rows, cols);
   const insertedAtPreviewCursor = insertMarkdownBlockAtPreviewCursor(tableBlock);
@@ -3647,8 +3664,10 @@ function fencedCodeMarkdown(pre) {
   if (!codeNode) return "";
   const className = codeNode.className || "";
   const lang = className.replace("language-", "").trim();
+  const meta = codeNode.dataset.meta || "";
   const content = codeNode.textContent || "";
-  return `\`\`\`${lang}\n${content}\n\`\`\``.trim();
+  const info = meta ? `${lang} ${meta}` : lang;
+  return `\`\`\`${info}\n${content}\n\`\`\``.trim();
 }
 
 function listToMarkdown(listNode, ordered) {
