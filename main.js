@@ -338,7 +338,7 @@ ipcMain.handle("mdx:compile", (_event, source) => {
 
 app.whenReady().then(() => {
   if (process.platform === "darwin" && app.dock) {
-    app.dock.setIcon(path.join(__dirname, "build", "icon.png"));
+    try { app.dock.setIcon(path.join(__dirname, "build", "icon.png")); } catch (_) {}
   }
   createWindow();
 

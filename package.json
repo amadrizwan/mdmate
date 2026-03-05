@@ -53,6 +53,7 @@
       "package.json",
       "assets/fonts/SourceCodePro-Regular.ttf",
       "assets/fonts/SourceCodePro-Medium.ttf",
+      "build/icon.png",
       "assets/asciiflow/**/*",
       "node_modules/@mdx-js/**",
       "node_modules/react/**",
