@@ -1,3 +1,10 @@
+# [0.2.0](https://github.com/amadrizwan/mdmate/compare/v0.1.3...v0.2.0) (2026-03-05)
+
+
+### Features
+
+* editable mdx ([e3ef7c5](https://github.com/amadrizwan/mdmate/commit/e3ef7c5120309981ce5f4dcea6f842b00402a26c))
+
 ## [0.1.3](https://github.com/amadrizwan/mdmate/compare/v0.1.2...v0.1.3) (2026-03-05)
 
 

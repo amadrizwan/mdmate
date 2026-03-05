@@ -1,6 +1,6 @@
 {
   "name": "mdmate",
-  "version": "0.1.3",
+  "version": "0.2.0",
   "description": "Markdown + Mermaid workspace with Confluence copy helpers",
   "main": "main.js",
   "scripts": {
