@@ -1,3 +1,10 @@
+# [0.3.0](https://github.com/amadrizwan/mdmate/compare/v0.2.0...v0.3.0) (2026-03-05)
+
+
+### Features
+
+* add jsx live button ([b2a88b5](https://github.com/amadrizwan/mdmate/commit/b2a88b55dd88fd0e600ea4194c571db278a6c361))
+
 # [0.2.0](https://github.com/amadrizwan/mdmate/compare/v0.1.3...v0.2.0) (2026-03-05)
 
 
