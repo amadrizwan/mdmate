@@ -1,4 +1,4 @@
-# mdmate Technical README
+# MDmate Technical README
 
 ## What this app is
 Electron Markdown workspace with:
