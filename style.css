@@ -1063,6 +1063,107 @@ button:disabled {
 .mdx-error { padding: 1rem; color: #e53e3e; background: #fff5f5; border-radius: 4px; margin: 1rem; }
 .mdx-error pre { white-space: pre-wrap; font-size: 0.85rem; }
 
+/* MDX component blocks - subtle label */
+.preview [data-mdx-component] {
+  position: relative;
+}
+.preview [data-mdx-component]::after {
+  content: "<" attr(data-mdx-component) ">";
+  position: absolute;
+  top: 4px;
+  right: 6px;
+  font-size: 10px;
+  color: #b08860;
+  opacity: 0.5;
+  pointer-events: none;
+  font-family: var(--editor-font);
+}
+
+/* MDX ESM blocks (imports/exports) */
+.preview pre > code[data-mdx-esm],
+.preview pre > code[data-mdx-expr] {
+  display: block;
+  padding: 8px 12px;
+  background: #f0eaff;
+  border-left: 3px solid #8b5cf6;
+  color: #5b21b6;
+  font-size: 12px;
+}
+
+/* Inline expressions */
+.preview code[data-mdx-expr] {
+  background: #f0eaff;
+  color: #5b21b6;
+  padding: 1px 4px;
+  border-radius: 3px;
+}
+
+.react-sandbox {
+  margin: 14px 0;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  overflow: hidden;
+  background: #fff;
+}
+
+.react-sandbox-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 12px;
+  background: #f8f2e6;
+  border-bottom: 1px solid var(--line);
+  font-size: 12px;
+  font-weight: 700;
+  color: #5e2a11;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.react-sandbox-body {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  min-height: 160px;
+}
+
+.react-sandbox-editor {
+  border-right: 1px solid var(--line);
+  min-height: 0;
+}
+
+.react-sandbox-code {
+  width: 100%;
+  height: 100%;
+  min-height: 160px;
+  border: 0;
+  margin: 0;
+  padding: 12px;
+  resize: vertical;
+  font: 13px/1.5 var(--editor-font);
+  color: #1b1b1b;
+  background: var(--panel-strong);
+  white-space: pre;
+  tab-size: 2;
+}
+
+.react-sandbox-code:focus {
+  outline: none;
+  background: #fff8f0;
+}
+
+.react-sandbox-preview {
+  min-height: 0;
+  overflow: auto;
+}
+
+.react-sandbox-frame {
+  width: 100%;
+  height: 100%;
+  min-height: 160px;
+  border: 0;
+  background: #fff;
+}
+
 @media (max-width: 980px) {
   .workspace-layout {
     grid-template-columns: 1fr;

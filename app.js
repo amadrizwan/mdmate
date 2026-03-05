@@ -148,6 +148,22 @@ marked.setOptions({
   headerIds: true
 });
 
+{
+  const originalCodeRenderer = new marked.Renderer().code.bind(new marked.Renderer());
+  const customRenderer = { code(code, language, escaped) {
+    const langStr = String(language || "");
+    const parts = langStr.split(/\s+/);
+    const lang = parts[0] || "";
+    const meta = parts.slice(1).join(" ");
+    if (meta.includes("live") && /^jsx?$/i.test(lang)) {
+      const escapedCode = code.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+      return `<pre><code class="language-${lang}" data-meta="live">${escapedCode}</code></pre>`;
+    }
+    return originalCodeRenderer(code, language, escaped);
+  }};
+  marked.use({ renderer: customRenderer });
+}
+
 mermaid.initialize({
   startOnLoad: false,
   securityLevel: "loose",
@@ -1015,6 +1031,17 @@ function normalizeDiagramPlaceholdersForDiff(root) {
     preNode.replaceWith(container);
   }
 
+  const liveCodes = [...root.querySelectorAll('pre > code[data-meta="live"]')];
+  for (const codeNode of liveCodes) {
+    const preNode = codeNode.parentElement;
+    if (!preNode) continue;
+    const source = String(codeNode.textContent || "");
+    const container = document.createElement("div");
+    container.className = "react-sandbox";
+    container.dataset.source = source;
+    preNode.replaceWith(container);
+  }
+
   const textArtCodes = [...root.querySelectorAll("pre > code")].filter((node) => isExportableTextArtCodeNode(node));
   for (const codeNode of textArtCodes) {
     const preNode = codeNode.parentElement;
@@ -1783,8 +1810,7 @@ async function loadWorkspaceFile(relativePath) {
     workspaceState.localDirty = false;
     workspaceState.conflictState = null;
     closeConflictDialog();
-    // Disable preview editing for MDX files (reverse mapping can't handle JSX output)
-    preview.contentEditable = isCurrentFileMdx() ? "false" : "true";
+    preview.contentEditable = "true";
     setFileSyncState("synced", "Synced");
     updateWorkspaceIndicators();
     renderWorkspaceFiles();
@@ -2304,6 +2330,13 @@ async function renderFromEditorPass() {
             return false;
           }
         }
+        if (fromEl.classList.contains("react-sandbox") && toEl.classList?.contains("react-sandbox")) {
+          const nextSource = normalizeFenceSourceForComparison(toEl.dataset.source || "");
+          const currentSource = normalizeFenceSourceForComparison(fromEl.dataset.source || "");
+          if (nextSource && nextSource === currentSource) {
+            return false;
+          }
+        }
         if (fromEl.classList.contains("text-art-diagram") && toEl.classList?.contains("text-art-diagram")) {
           const nextSource = normalizeFenceSourceForComparison(toEl.dataset.source || "");
           const nextLanguage = String(toEl.dataset.language || "text").trim().toLowerCase();
@@ -2318,6 +2351,7 @@ async function renderFromEditorPass() {
     });
     const mermaidStats = await hydrateMermaid(preview);
     const textArtStats = await hydrateTextArt(preview);
+    const sandboxStats = await hydrateReactSandbox(preview);
     resolvePreviewImageSources(preview);
     makeProtectedBlocksReadonly(preview);
     rebuildScrollMap();
@@ -2338,7 +2372,8 @@ async function renderFromEditorPass() {
     debugLog("render.pass.done", {
       durationMs: Math.round((performance.now() - passStartedAt) * 100) / 100,
       mermaid: mermaidStats,
-      textArt: textArtStats
+      textArt: textArtStats,
+      sandbox: sandboxStats
     });
   } catch (err) {
     console.error(err);
@@ -2480,11 +2515,161 @@ function attachTextArtDiagramContent(container, artifact) {
 }
 
 function makeProtectedBlocksReadonly(root) {
-  root.querySelectorAll("pre, .diagram, .text-art-diagram").forEach((node) => {
+  root.querySelectorAll("pre, .diagram, .text-art-diagram, .react-sandbox, [data-mdx-component], [data-mdx-expr]").forEach((node) => {
     if (node.getAttribute("contenteditable") !== "false") {
       node.setAttribute("contenteditable", "false");
     }
   });
+}
+
+let _reactSandboxSrcDocPromise = null;
+
+async function loadReactSandboxVendorScripts() {
+  const files = ["./vendor/react.production.min.js", "./vendor/react-dom.production.min.js", "./vendor/babel.min.js"];
+  const scripts = await Promise.all(files.map(async (f) => {
+    const resp = await fetch(f);
+    return resp.text();
+  }));
+  return scripts.map((s) => `<script>${s}<\/script>`).join("");
+}
+
+async function buildReactSandboxSrcDoc() {
+  if (_reactSandboxSrcDocPromise) return _reactSandboxSrcDocPromise;
+  _reactSandboxSrcDocPromise = (async () => {
+    const reactScript = await loadReactSandboxVendorScripts();
+    return `<!DOCTYPE html>
+<html><head><meta charset="utf-8"><style>
+*{box-sizing:border-box;margin:0}
+body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;font-size:14px;padding:12px;color:#171717}
+button{cursor:pointer}
+.sandbox-error{color:#991b1b;background:#fef2f2;padding:8px 10px;border-radius:6px;font-size:12px;margin-top:8px;white-space:pre-wrap;font-family:monospace}
+</style>${reactScript}</head><body>
+<div id="root"></div>
+<script>
+window.__sandbox__ = {
+  render: function(source) {
+    var root = document.getElementById("root");
+    try {
+      var transformed = Babel.transform(source + "\\nReactDOM.render(React.createElement(typeof App !== 'undefined' ? App : function(){return React.createElement('div',null,'Define an App component')}), document.getElementById('root'));", {
+        presets: ["react"],
+        filename: "sandbox.jsx"
+      }).code;
+      root.innerHTML = "";
+      var errorEl = document.getElementById("sandbox-error");
+      if (errorEl) errorEl.remove();
+      new Function("React", "ReactDOM", transformed)(React, ReactDOM);
+      return { error: null };
+    } catch (err) {
+      var existing = document.getElementById("sandbox-error");
+      if (!existing) {
+        existing = document.createElement("div");
+        existing.id = "sandbox-error";
+        existing.className = "sandbox-error";
+        document.body.appendChild(existing);
+      }
+      existing.textContent = err.message;
+      return { error: err.message };
+    }
+  }
+};
+<\/script></body></html>`;
+  })();
+  return _reactSandboxSrcDocPromise;
+}
+
+function createReactSandboxContainer(source) {
+  const wrapper = document.createElement("div");
+  wrapper.className = "react-sandbox";
+  wrapper.dataset.source = source;
+
+  const header = document.createElement("div");
+  header.className = "react-sandbox-header";
+  const label = document.createElement("span");
+  label.textContent = "JSX Live";
+  header.appendChild(label);
+  const resetBtn = document.createElement("button");
+  resetBtn.type = "button";
+  resetBtn.className = "ghost compact";
+  resetBtn.textContent = "Reset";
+  header.appendChild(resetBtn);
+  wrapper.appendChild(header);
+
+  const body = document.createElement("div");
+  body.className = "react-sandbox-body";
+
+  const editorPanel = document.createElement("div");
+  editorPanel.className = "react-sandbox-editor";
+  const textarea = document.createElement("textarea");
+  textarea.className = "react-sandbox-code";
+  textarea.spellcheck = false;
+  textarea.defaultValue = source;
+  editorPanel.appendChild(textarea);
+  body.appendChild(editorPanel);
+
+  const previewPanel = document.createElement("div");
+  previewPanel.className = "react-sandbox-preview";
+  const iframe = document.createElement("iframe");
+  iframe.className = "react-sandbox-frame";
+  iframe.sandbox = "allow-scripts";
+  previewPanel.appendChild(iframe);
+  body.appendChild(previewPanel);
+
+  wrapper.appendChild(body);
+
+  return { wrapper, textarea, iframe, resetBtn };
+}
+
+function renderSandboxCode(iframe, source) {
+  if (!iframe.contentWindow || !iframe.contentWindow.__sandbox__) return;
+  iframe.contentWindow.__sandbox__.render(source);
+}
+
+async function populateReactSandboxContainer(container) {
+  if (container.querySelector(".react-sandbox-body")) return;
+  const source = container.dataset.source || "";
+  const { wrapper } = createReactSandboxContainer(source);
+
+  container.innerHTML = wrapper.innerHTML;
+  container.className = wrapper.className;
+
+  const ta = container.querySelector(".react-sandbox-code");
+  const fr = container.querySelector(".react-sandbox-frame");
+  const rb = container.querySelector(".react-sandbox-header button");
+  if (!ta || !fr) return;
+
+  let debounceTimer = 0;
+  fr.addEventListener("load", () => {
+    clearTimeout(debounceTimer);
+    renderSandboxCode(fr, ta.value);
+  });
+
+  ta.addEventListener("input", () => {
+    clearTimeout(debounceTimer);
+    debounceTimer = setTimeout(() => {
+      renderSandboxCode(fr, ta.value);
+    }, 400);
+  });
+
+  if (rb) {
+    rb.addEventListener("click", () => {
+      ta.value = source;
+      renderSandboxCode(fr, source);
+    });
+  }
+
+  const srcdoc = await buildReactSandboxSrcDoc();
+  fr.srcdoc = srcdoc;
+}
+
+async function hydrateReactSandbox(root) {
+  const placeholders = [...root.querySelectorAll(".react-sandbox")];
+  const tasks = [];
+  for (const container of placeholders) {
+    if (container.querySelector(".react-sandbox-body")) continue;
+    tasks.push(populateReactSandboxContainer(container));
+  }
+  await Promise.all(tasks);
+  return { total: placeholders.length, hydrated: tasks.length };
 }
 
 function resolvePreviewImageSources(root) {
@@ -3366,7 +3551,16 @@ function nodeToMarkdown(node) {
   if (tag === "ul") return listToMarkdown(node, false);
   if (tag === "ol") return listToMarkdown(node, true);
   if (tag === "hr") return "---";
-  if (tag === "pre") return fencedCodeMarkdown(node);
+  if (tag === "pre") {
+    const codeNode = node.querySelector("code");
+    if (codeNode && codeNode.dataset.mdxEsm) {
+      return codeNode.textContent || "";
+    }
+    if (codeNode && codeNode.dataset.mdxExpr) {
+      return codeNode.textContent || "";
+    }
+    return fencedCodeMarkdown(node);
+  }
   if (tag === "table") return tableToMarkdown(node);
   if (tag === "img") return `![${node.getAttribute("alt") || ""}](${getImageMarkdownSrc(node)})`;
   if (node.classList.contains("diagram")) {
@@ -3377,6 +3571,22 @@ function nodeToMarkdown(node) {
     const sourceLanguage = (node.dataset.language || "text").trim().toLowerCase();
     const sourceText = node.dataset.source || "";
     return `\`\`\`${sourceLanguage}\n${sourceText}\n\`\`\``;
+  }
+  if (node.classList.contains("react-sandbox")) {
+    const sandboxTextarea = node.querySelector(".react-sandbox-code");
+    const sourceText = sandboxTextarea ? sandboxTextarea.value : (node.dataset.source || "");
+    return `\`\`\`jsx live\n${sourceText}\n\`\`\``;
+  }
+  if (node.dataset && node.dataset.mdxComponent) {
+    const name = node.dataset.mdxComponent;
+    const props = node.dataset.mdxProps ? JSON.parse(node.dataset.mdxProps) : {};
+    const propsStr = Object.entries(props)
+      .filter(([, v]) => v != null && v !== undefined)
+      .map(([k, v]) => typeof v === "string" ? `${k}="${v}"` : `${k}={${JSON.stringify(v)}}`)
+      .join(" ");
+    const inner = nodeToMarkdownLines(node).trim();
+    const openTag = propsStr ? `<${name} ${propsStr}>` : `<${name}>`;
+    return inner ? `${openTag}\n${inner}\n</${name}>` : `<${name} />`;
   }
   if (tag === "div" || tag === "section" || tag === "article") return nodeToMarkdownLines(node);
   return inlineToMarkdown(node);
@@ -3400,6 +3610,9 @@ function inlineToMarkdown(node) {
 
   if (tag === "strong" || tag === "b") return `**${children}**`;
   if (tag === "em" || tag === "i") return `*${children}*`;
+  if (tag === "code" && node.dataset && node.dataset.mdxExpr) {
+    return node.textContent || "";
+  }
   if (tag === "code") return `\`${sanitizeInlineCode(node.textContent)}\``;
   if (tag === "a") {
     const href = node.getAttribute("href") || "#";

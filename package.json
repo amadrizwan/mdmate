@@ -55,6 +55,7 @@
       "assets/fonts/SourceCodePro-Medium.ttf",
       "build/icon.png",
       "assets/asciiflow/**/*",
+      "vendor/**/*",
       "node_modules/@mdx-js/**",
       "node_modules/react/**",
       "node_modules/react-dom/**",

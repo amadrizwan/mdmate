@@ -17,7 +17,10 @@ function Callout({ type = "info", title, children }) {
     success: { bg: "#f0fdf4", border: "#22c55e", color: "#166534" },
   };
   const s = colors[type] || colors.info;
+  const propsJson = JSON.stringify({ type, ...(title ? { title } : {}) });
   return React.createElement("div", {
+    "data-mdx-component": "Callout",
+    "data-mdx-props": propsJson,
     style: {
       padding: "12px 16px",
       margin: "12px 0",
@@ -33,7 +36,10 @@ function Callout({ type = "info", title, children }) {
 }
 
 function Badge({ color = "#e86a33", children }) {
+  const propsJson = JSON.stringify({ color });
   return React.createElement("span", {
+    "data-mdx-component": "Badge",
+    "data-mdx-props": propsJson,
     style: {
       display: "inline-block",
       padding: "2px 8px",
@@ -48,7 +54,10 @@ function Badge({ color = "#e86a33", children }) {
 
 function Tabs({ labels = [], children }) {
   const items = Array.isArray(children) ? children : [children];
+  const propsJson = JSON.stringify({ labels });
   return React.createElement("div", {
+    "data-mdx-component": "Tabs",
+    "data-mdx-props": propsJson,
     style: { border: "1px solid #ded7c9", borderRadius: "8px", margin: "12px 0", overflow: "hidden" },
   }, ...items.map((child, i) =>
     React.createElement("div", { key: i },
@@ -66,9 +75,55 @@ function Tabs({ labels = [], children }) {
   ));
 }
 
-function remarkStripImports() {
+function remarkPreserveMdxConstructs() {
   return (tree) => {
-    tree.children = tree.children.filter((node) => node.type !== "mdxjsEsm");
+    tree.children = tree.children.map((node) => {
+      if (node.type === "mdxjsEsm") {
+        return {
+          type: "code",
+          lang: "mdx-esm",
+          value: node.value,
+          data: { hProperties: { "data-mdx-esm": "true" } },
+        };
+      }
+      return node;
+    });
+
+    const visitExpressions = (node) => {
+      if (node.type === "mdxFlowExpression") {
+        Object.assign(node, {
+          type: "code",
+          lang: "mdx-expr",
+          value: `{${node.value}}`,
+          children: undefined,
+          data: { hProperties: { "data-mdx-expr": "true" } },
+        });
+      }
+      if (node.type === "mdxTextExpression") {
+        Object.assign(node, {
+          type: "inlineCode",
+          value: `{${node.value}}`,
+          children: undefined,
+          data: { hProperties: { "data-mdx-expr": "true" } },
+        });
+      }
+      if (node.children) node.children.forEach(visitExpressions);
+    };
+    visitExpressions(tree);
+  };
+}
+
+function remarkLiveCodeBlocks() {
+  return (tree) => {
+    const visit = (node) => {
+      if (node.type === "code" && node.meta && node.meta.includes("live") && /^jsx?$/i.test(node.lang || "")) {
+        if (!node.data) node.data = {};
+        if (!node.data.hProperties) node.data.hProperties = {};
+        node.data.hProperties["data-meta"] = "live";
+      }
+      if (node.children) node.children.forEach(visit);
+    };
+    visit(tree);
   };
 }
 
@@ -78,7 +133,7 @@ parentPort.on("message", async ({ id, source }) => {
   try {
     const { default: MDXContent } = await evaluate(source, {
       ...runtime,
-      remarkPlugins: [remarkGfm, remarkStripImports],
+      remarkPlugins: [remarkGfm, remarkPreserveMdxConstructs, remarkLiveCodeBlocks],
       // No baseUrl — disables import/export resolution for security
     });
     const html = renderToStaticMarkup(runtime.jsx(MDXContent, { components: builtinComponents }));
