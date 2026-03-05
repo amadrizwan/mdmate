@@ -35,6 +35,20 @@ jobs:
       - run: npm run build:asciiflow
       - run: npm run ${{ matrix.script }} -- --publish never
 
+      - name: Ad-hoc sign and repackage macOS DMGs
+        if: runner.os == 'macOS'
+        run: |
+          # Sign both x64 and arm64 app bundles
+          for app in dist/mac/mdmate.app dist/mac-arm64/mdmate.app; do
+            [ -d "$app" ] || continue
+            codesign --force --deep --sign - "$app"
+          done
+          # Remove original DMGs and recreate with signed apps
+          rm -f dist/*.dmg dist/*.blockmap
+          VERSION=$(node -p "require('./package.json').version")
+          hdiutil create -volname "mdmate" -srcfolder dist/mac -ov -format UDZO "dist/mdmate-${VERSION}.dmg"
+          hdiutil create -volname "mdmate" -srcfolder dist/mac-arm64 -ov -format UDZO "dist/mdmate-${VERSION}-arm64.dmg"
+
       - name: Upload release assets
         uses: softprops/action-gh-release@v2
         with:
